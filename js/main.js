@@ -6,13 +6,120 @@ AOS.init({
     mirror: false
 });
 
-// Mobile Menu Toggle
-const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-const navMenu = document.querySelector('.nav-menu');
+// Mobile Menu Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navMenu = document.querySelector('.nav-menu');
+    const body = document.body;
+    let isMenuOpen = false;
 
-mobileMenuBtn.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-    mobileMenuBtn.classList.toggle('active');
+    // Toggle mobile menu
+    mobileMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        isMenuOpen = !isMenuOpen;
+        navMenu.classList.toggle('active');
+        mobileMenuBtn.classList.toggle('active');
+        body.classList.toggle('menu-open');
+        
+        // Toggle hamburger icon with smooth animation
+        const icon = this.querySelector('i');
+        if (icon.classList.contains('fa-bars')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (isMenuOpen && !navMenu.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    // Close mobile menu when pressing Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && isMenuOpen) {
+            closeMenu();
+        }
+    });
+
+    // Close mobile menu when clicking on a link
+    const navLinks = document.querySelectorAll('.nav-menu a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (isMenuOpen) {
+                closeMenu();
+            }
+        });
+    });
+
+    // Function to close menu
+    function closeMenu() {
+        isMenuOpen = false;
+        navMenu.classList.remove('active');
+        mobileMenuBtn.classList.remove('active');
+        body.classList.remove('menu-open');
+        const icon = mobileMenuBtn.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+    }
+
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            if (window.innerWidth > 768 && isMenuOpen) {
+                closeMenu();
+            }
+        }, 250);
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Add scroll animations
+    const animateOnScroll = function() {
+        const elements = document.querySelectorAll('.feature, .course-card, .testimonial-slide');
+        elements.forEach(element => {
+            const elementTop = element.getBoundingClientRect().top;
+            const elementBottom = element.getBoundingClientRect().bottom;
+            const isVisible = (elementTop < window.innerHeight) && (elementBottom >= 0);
+            
+            if (isVisible) {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }
+        });
+    };
+
+    // Initial check for elements in view
+    animateOnScroll();
+
+    // Check for elements in view on scroll with throttling
+    let scrollTimer;
+    window.addEventListener('scroll', function() {
+        if (!scrollTimer) {
+            scrollTimer = setTimeout(function() {
+                animateOnScroll();
+                scrollTimer = null;
+            }, 100);
+        }
+    });
 });
 
 // Testimonials Carousel
@@ -88,20 +195,6 @@ formGroups.forEach(group => {
     }
 });
 
-// Smooth Scrolling
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
 // Header Scroll Effect
 const header = document.querySelector('.header');
 let lastScroll = 0;
@@ -171,23 +264,6 @@ forms.forEach(form => {
         }
     });
 });
-
-// Add animation classes on scroll
-const animateOnScroll = () => {
-    const elements = document.querySelectorAll('.feature, .course-card, .service-card, .contact-card');
-    
-    elements.forEach(element => {
-        const elementTop = element.getBoundingClientRect().top;
-        const elementBottom = element.getBoundingClientRect().bottom;
-        
-        if (elementTop < window.innerHeight && elementBottom > 0) {
-            element.classList.add('animate');
-        }
-    });
-};
-
-window.addEventListener('scroll', animateOnScroll);
-window.addEventListener('load', animateOnScroll);
 
 // Scroll to Top Button
 const scrollToTopBtn = document.getElementById('scrollToTopBtn');
